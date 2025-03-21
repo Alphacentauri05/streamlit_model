@@ -4,19 +4,29 @@ import numpy as np
 import joblib
 import os
 import matplotlib.pyplot as plt
-import gdown
+import requests
 
-# Model file path
-MODEL_PATH = "./best_rf_model.pkl"
-GOOGLE_DRIVE_FILE_ID = "1xtdK73bVV2XOx9iXcVN2xKbwy82QeqNQ"  # Replace with your actual file ID
+# Hugging Face model details
+HF_USERNAME = "udaysharma123"
+HF_MODEL_REPO = "colon_final"
+MODEL_FILENAME = "best_rf_model.pkl"
+MODEL_PATH = f"./{MODEL_FILENAME}"
 
-# Download model if not present
-if not os.path.exists(MODEL_PATH):
-    st.write("Downloading model from Google Drive...")
-    url = f"https://drive.google.com/uc?id={GOOGLE_DRIVE_FILE_ID}"
-    gdown.download(url, MODEL_PATH, quiet=False)
+# Function to download model from Hugging Face if not found locally
+def download_model():
+    if not os.path.exists(MODEL_PATH):
+        print("Downloading model from Hugging Face...")
+        url = f"https://huggingface.co/{HF_USERNAME}/{HF_MODEL_REPO}/resolve/main/{MODEL_FILENAME}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            with open(MODEL_PATH, "wb") as f:
+                f.write(response.content)
+            print("Model downloaded successfully!")
+        else:
+            raise Exception(f"Failed to download model. Status code: {response.status_code}")
 
-# Load model into memory
+# Ensure model is available
+download_model()
 model = joblib.load(MODEL_PATH)
 
 def extract_features(audio_file):
